@@ -1,48 +1,69 @@
-cmake_minimum_required(VERSION 3.5)
-
+cmake_minimum_required(VERSION 3.8)
 project(ros2socketcan_bridge)
 
-if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-#TARGET_LINK_LIBRARIES(ros_iblock mylib)
-
+# find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
-#find_package(rclc REQUIRED)
 find_package(rclcpp REQUIRED)
-#find_package(rcl REQUIRED)
-find_package(rmw REQUIRED)
-find_package(rmw_implementation_cmake REQUIRED)
-#find_package(iblock_interfaces REQUIRED)
 find_package(can_msgs REQUIRED)
-#find_package(rmw_implementation REQUIRED)
+find_package(std_msgs REQUIRED)
 
-include_directories(include)
+add_executable(${PROJECT_NAME}
+  src/ros2socketcan.cpp
+)
 
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin ) 
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib ) 
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
+target_include_directories(${PROJECT_NAME}
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(${PROJECT_NAME}  dl -lboost_system)
+ament_target_dependencies(${PROJECT_NAME}
+  "ament_cmake"
+  "rclcpp"
+  "can_msgs"
+  "std_msgs"
+)
+
+install(TARGETS
+  ${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install libraries
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ros2socketcan_bridgeTargets
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/${PROJECT_NAME}
+)
+
+# Install binaries
+install(
+  TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
 
 
-#add_executable(ros2can src/ros2can.cpp)
-#add_executable(can2ros src/can2ros.cpp)
-add_executable(ros2can_bridge src/ros2socketcan.cpp)
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # comment the line when a copyright and license is added to all source files
+  set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # comment the line when this package is in a git repo and when
+  # a copyright and license is added to all source files
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
-#TARGET_LINK_LIBRARIES(ros2can dl -lboost_system)# -pthread  -lcrypt -lm -lpthread)
-#TARGET_LINK_LIBRARIES(can2ros dl -lboost_system)# -pthread  -lcrypt -lm -lpthread)
-TARGET_LINK_LIBRARIES(ros2can_bridge dl -lboost_system)# -pthread  -lcrypt -lm -lpthread)
-
-#ament_target_dependencies(ros2can rclcpp std_msgs can_msgs)
-#ament_target_dependencies(can2ros rclcpp std_msgs can_msgs)
-ament_target_dependencies(ros2can_bridge rclcpp std_msgs can_msgs)
-install(TARGETS #ros2can
-                #can2ros
-                ros2can_bridge
-        DESTINATION bin)
-        
+ament_export_include_directories(include)
 ament_package()
