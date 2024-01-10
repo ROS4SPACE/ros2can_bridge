@@ -35,6 +35,12 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(DIRECTORY
+  config
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+
 # Install libraries
 install(
   TARGETS ${PROJECT_NAME}

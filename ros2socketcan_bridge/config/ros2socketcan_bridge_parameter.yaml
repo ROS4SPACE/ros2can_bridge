@@ -1,0 +1,3 @@
+ros2socketcan_bridge:
+  ros__parameters:
+    can_socket: can0
