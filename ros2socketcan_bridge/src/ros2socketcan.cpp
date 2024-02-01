@@ -98,12 +98,15 @@ void Ros2SocketCan::canSend(const can_msgs::msg::Frame msg)
         frame1.data[i] = msg.data[i];
     }
 
-    RCLCPP_INFO(rclcpp::get_logger("socketcan_bridge"),
-                    "S | %x | %s | ", frame1.can_id, frame1.data);
-    for(int j=0;j<(int)frame1.can_dlc;j++)
+    std::stringstream out;
+    out << std::string("S | ") << std::to_string(frame1.can_id) << std::string("| ");
+    for (int j = 0; j < (int)frame1.can_dlc; j++)
     {
-        printf("%i ", frame1.data[j]);
+        out << std::to_string(frame1.data[j]) << std::string(" ");
     }
+    out << std::endl;
+    RCLCPP_INFO(this->get_logger(), out.str().c_str());
+
 
     stream.async_write_some(
         boost::asio::buffer(&frame1, sizeof(frame1)),
