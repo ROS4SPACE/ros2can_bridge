@@ -105,7 +105,7 @@ void Ros2SocketCan::canSend(const can_msgs::msg::Frame msg)
         out << std::to_string(frame1.data[j]) << std::string(" ");
     }
     out << std::endl;
-    RCLCPP_INFO(this->get_logger(), out.str().c_str());
+    RCLCPP_DEBUG(this->get_logger(), out.str().c_str());
 
 
     stream.async_write_some(
@@ -158,7 +158,7 @@ void Ros2SocketCan::canListener(struct can_frame& rec_frame,
         s << std::to_string(rec_frame.data[j]) << " ";
     }
     s << std::endl;
-    RCLCPP_INFO(get_logger(), s.str().c_str());
+    RCLCPP_DEBUG(get_logger(), s.str().c_str());
     publisher_->publish(frame);
 
     stream.async_read_some(
